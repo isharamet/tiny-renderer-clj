@@ -9,9 +9,9 @@
       (paintComponent [graphics]
         (proxy-super paintComponent graphics)
         (doto graphics
-          (line/draw-line-3 13 20 80 40 Color/white)
-          (line/draw-line-3 20 13 40 80 Color/red)
-          (line/draw-line-3 80 40 13 20 Color/red)))))
+          (line/draw-line-4 13 20 80 40 Color/white)
+          (line/draw-line-4 20 13 40 80 Color/red)
+          (line/draw-line-4 80 40 13 20 Color/red)))))
 
 (defn render []
   (let [panel (doto (draw)

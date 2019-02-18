@@ -41,3 +41,29 @@
                                           {:x x :y y}))) 
                          (range x0 (inc x1)))]
     (draw-pixels graphics line-pixels color)))
+
+(defn draw-line-4 [graphics x0 y0 x1 y1 color]
+  (let [is-steep (< (Math/abs (- x0 x1)) (Math/abs (- y0 y1)))
+        [x0 y0 x1 y1] (if is-steep [y0 x0 y1 x1]
+                                   [x0 y0 x1 y1])
+        [x0 y0 x1 y1] (if (> x0 x1) [x1 y1 x0 y0]
+                                    [x0 y0 x1 y1])
+        dx (- x1 x0)
+        dy (- y1 y0)
+        derr (Math/abs (double (/ dy dx)))
+        line-pixels (reduce (fn [acc x]
+                              (let [y (:y acc)
+                                    p (if is-steep {:x y :y x}
+                                                   {:x x :y y})
+                                    err (+ (:err acc) derr)
+                                    [y err] (if (> err 0.5)
+                                              [(+ y (if (> y1 y0) 1 -1)) (- err 1)]
+                                              [y err])]
+                                (assoc acc
+                                       :err err
+                                       :y y
+                                       :pixels (conj (:pixels acc) p))))
+                            {:err 0 :y y0 :pixels []}
+                            (range x0 (inc x1)))]
+    (draw-pixels graphics (:pixels line-pixels) color)
+))
