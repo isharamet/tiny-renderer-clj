@@ -5,65 +5,51 @@
   (doto graphics
     (.drawRect x y  0 0)))
 
-(defn draw-pixels
-  ([graphics pixels] (reduce (fn [g p] (draw-pixel g (:x p) (:y p)))
-                             graphics
-                             pixels))
-  ([graphics pixels color] (doto graphics
-                             (.setColor color)
-                             (draw-pixels pixels))))
-
 (defn draw-line-1 [graphics x0 y0 x1 y1 color]
-  (let [axis-coord (fn [a b t] (Math/floor (double (+ a (* (- b a) t)))))
-        line-pixels (map (fn [t] {:x (axis-coord x0 x1 t)
-                                  :y (axis-coord y0 y1 t)})
-                         (range 0 1 0.01))]
-    (draw-pixels graphics line-pixels color)))
+  (let [next-c (fn [s e t] (Math/floor (double (+ s (* (- e s) t)))))
+        graphics (doto graphics (.setColor color))]
+    (reduce (fn [g t] (draw-pixel g (next-c x0 x1 t) (next-c y0 y1 t)))
+            graphics
+            (range 0 1 0.01))))
 
 (defn draw-line-2 [graphics x0 y0 x1 y1 color]
-  (let [line-pixels (map (fn [x]
-                           (let [t (/ (- x x0) (- x1 x0))
-                                 y (+ (* y0 (- 1 t)) (* y1 t))]
-                             {:x x :y y})) 
-                         (range x0 (inc x1)))]
-    (draw-pixels graphics line-pixels color)))
+  (let [graphics (doto graphics (.setColor color))]
+    (reduce (fn [g x] (let [t (/ (- x x0) (- x1 x0))
+                          y (+ (* y0 (- 1 t)) (* y1 t))]
+                      (draw-pixel g x y)))
+          graphics
+          (range x0 (inc x1)))))
 
 (defn draw-line-3 [graphics x0 y0 x1 y1 color]
-  (let [is-steep (< (Math/abs (- x0 x1)) (Math/abs (- y0 y1)))
-        [x0 y0 x1 y1] (if is-steep [y0 x0 y1 x1]
-                                   [x0 y0 x1 y1])
-        [x0 y0 x1 y1] (if (> x0 x1) [x1 y1 x0 y0]
-                                    [x0 y0 x1 y1])
-        line-pixels (map (fn [x]
-                           (let [t (/ (- x x0) (- x1 x0))
-                                 y (+ (* y0 (- 1 t)) (* y1 t))]
-                             (if is-steep {:x y :y x}
-                                          {:x x :y y}))) 
-                         (range x0 (inc x1)))]
-    (draw-pixels graphics line-pixels color)))
+  (let [steep (< (Math/abs (- x0 x1)) (Math/abs (- y0 y1)))
+        [x0 y0 x1 y1] (if steep [y0 x0 y1 x1] [x0 y0 x1 y1])
+        [x0 y0 x1 y1] (if (> x0 x1) [x1 y1 x0 y0] [x0 y0 x1 y1])
+        graphics (doto graphics (.setColor color))]
+    (reduce (fn [g x] (let [t (/ (- x x0) (- x1 x0))
+                            y (+ (* y0 (- 1 t)) (* y1 t))
+                            [x y] (if steep [y x] [x y])]
+                        (draw-pixel g x y)))
+            graphics
+            (range x0 (inc x1)))))
 
 (defn draw-line-4 [graphics x0 y0 x1 y1 color]
-  (let [is-steep (< (Math/abs (- x0 x1)) (Math/abs (- y0 y1)))
-        [x0 y0 x1 y1] (if is-steep [y0 x0 y1 x1]
-                                   [x0 y0 x1 y1])
-        [x0 y0 x1 y1] (if (> x0 x1) [x1 y1 x0 y0]
-                                    [x0 y0 x1 y1])
+  (let [steep (< (Math/abs (- x0 x1)) (Math/abs (- y0 y1)))
+        [x0 y0 x1 y1] (if steep [y0 x0 y1 x1] [x0 y0 x1 y1])
+        [x0 y0 x1 y1] (if (> x0 x1) [x1 y1 x0 y0] [x0 y0 x1 y1])
         dx (- x1 x0)
         dy (- y1 y0)
         derr (Math/abs (double (/ dy dx)))
-        line-pixels (reduce (fn [acc x]
-                              (let [y (:y acc)
-                                    p (if is-steep {:x y :y x}
-                                                   {:x x :y y})
-                                    err (+ (:err acc) derr)
-                                    [y err] (if (> err 0.5)
-                                              [(+ y (if (> y1 y0) 1 -1)) (- err 1)]
-                                              [y err])]
-                                (assoc acc
-                                       :err err
-                                       :y y
-                                       :pixels (conj (:pixels acc) p))))
-                            {:err 0 :y y0 :pixels []}
-                            (range x0 (inc x1)))]
-    (draw-pixels graphics (:pixels line-pixels) color)
-))
+        graphics (doto graphics (.setColor color))
+        res (reduce (fn [acc x]
+                      (let [yc (:y acc)
+                            [x y] (if steep [yc x] [x yc])
+                            err (+ (:err acc) derr)
+                            [yn err] (if (> err 0.5)
+                                       [(+ yc (if (> y1 y0) 1 -1)) (- err 1)]
+                                       [yc err])]
+                        {:err err
+                         :y yn
+                         :g (draw-pixel (:g acc) x y)}))
+                    {:err 0 :y y0 :g graphics}
+                    (range x0 (inc x1)))]
+    (:g res)))
