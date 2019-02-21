@@ -16,8 +16,7 @@ Simple software renderer implementation in Clojure based on [tinyrenderer](https
 - [ ] Lesson 9: Real OpenGL (GLSL) application
 
 
-![Progress](https://github.com/isharamet/tiny-renderer-clj/raw/master/img/progress.png "Progress")
-
+<img src="https://github.com/isharamet/tiny-renderer-clj/raw/master/img/progress.png" width="712" height="712">
 
 ## Usage
 
