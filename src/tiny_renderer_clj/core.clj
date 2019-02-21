@@ -1,17 +1,17 @@
 (ns tiny-renderer-clj.core
-  (:require [tiny-renderer-clj.line :as line])
+  (:require [tiny-renderer-clj.line :as line]
+            [tiny-renderer-clj.model :as model])
   (:import (java.awt Color)
            (javax.swing JFrame JPanel))
   (:gen-class))
+
 
 (defn draw []
   (proxy [JPanel] []
       (paintComponent [graphics]
         (proxy-super paintComponent graphics)
         (doto graphics
-          (line/draw-line-4 13 20 80 40 Color/white)
-          (line/draw-line-4 20 13 40 80 Color/red)
-          (line/draw-line-4 80 40 13 20 Color/red)))))
+          (model/render "resources/african_head.obj" 600 600)))))
 
 (defn render []
   (let [panel (doto (draw)
@@ -20,11 +20,12 @@
    (doto (JFrame. "tiny-renderer-clj")
      ;;(.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
      (.setContentPane panel)
-     (.setSize 300 300)
+     (.setSize 600 640)
      (.setVisible true))))
-
-(render)
 
 (defn -main []
   (render))
+
+;;(render)
+
 

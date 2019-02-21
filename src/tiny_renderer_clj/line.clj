@@ -75,3 +75,12 @@
                     {:err2 0 :y y0 :g graphics}
                     (range x0 (inc x1)))]
     (:g res)))
+
+(defn draw-line
+  ([graphics x0 y0 x1 y1]
+   (doto graphics
+     (.drawLine x0 y0 x1 y1)))
+  ([graphics x0 y0 x1 y1 color]
+   (doto graphics
+     (.setColor color)
+     (draw-line x0 y0 x1 y1))))
