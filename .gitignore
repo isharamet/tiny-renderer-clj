@@ -6,3 +6,5 @@ profiles.clj
 /.lein-*
 /.nrepl-port
 
+.DS_Store
+
