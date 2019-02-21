@@ -15,8 +15,14 @@ Simple software renderer implementation in Clojure based on [tinyrenderer](https
 - [ ] Lesson 8: Ambient occlusion
 - [ ] Lesson 9: Real OpenGL (GLSL) application
 
+
+![Progress](https://github.com/isharamet/tiny-renderer-clj/raw/master/img/progress.png "Progress")
+
+
 ## Usage
 
 ```
 lein run
 ```
+
+
