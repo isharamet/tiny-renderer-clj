@@ -1,5 +1,6 @@
 (ns tiny-renderer-clj.model
   (:require [tiny-renderer-clj.line :as line]
+            [tiny-renderer-clj.triangle :as triangle]
             [clojure.java.io :as io]
             [clojure.string :as str])
   (:import (java.awt Color)))
@@ -33,24 +34,22 @@
               model
               lines))))
 
+(defn scale-point [[x y z] hwidth hheight]
+  (let [x (* (inc x) hwidth)
+        y (* (inc y) hheight)]
+    [x y z]))
+
 (defn render [graphics file width height]
   (let [model (load-model file)
         {:keys [faces vertices]} model
         hh (/ height 2)
         hw (/ width 2)]
     (reduce (fn [g face]
-              (let [fvs (map #(nth vertices (dec %)) face)
-                    fes (partition 2 1 fvs fvs)]
-                (reduce (fn [g [v0 v1]]
-                          (let [[x0 y0 _] v0
-                                [x1 y1 _] v1
-                                x0 (* (inc x0) hw)
-                                y0 (* (inc y0) hh)
-                                x1 (* (inc x1) hw)
-                                y1 (* (inc y1) hh)]
-                            (line/draw-line g x0 y0 x1 y1 Color/white)))
-                         g
-                         fes)))
-            graphics
+              (let [vs (map #(nth vertices (dec %)) face)
+                    svs (map #(scale-point % hw hh) vs)
+                    es (partition 2 1 svs svs)]
+                (triangle/draw-random-colored-filled-triangle g svs)))
+            (doto graphics
+              (.setColor Color/white))
             faces)))
 
