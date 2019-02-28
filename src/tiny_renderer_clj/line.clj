@@ -84,3 +84,17 @@
    (doto graphics
      (.setColor color)
      (draw-line x0 y0 x1 y1))))
+
+(defn draw-lines 
+  ([graphics lines]
+   (reduce (fn [g [v0 v1]]
+             (let [[x0 y0 _] v0
+                   [x1 y1 _] v1]
+               (draw-line g x0 y0 x1 y1)))
+           graphics
+           lines))
+  ([graphics lines color]
+   (doto graphics
+     (.setColor color)
+     (draw-lines lines))))
+

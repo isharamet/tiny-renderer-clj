@@ -48,7 +48,9 @@
               (let [vs (map #(nth vertices (dec %)) face)
                     svs (map #(scale-point % hw hh) vs)
                     es (partition 2 1 svs svs)]
-                (triangle/draw-random-colored-filled-triangle g svs)))
+                (line/draw-lines g es Color/green)
+                ;;(triangle/draw-random-colored-filled-triangle g svs)
+                ))
             (doto graphics
               (.setColor Color/white))
             faces)))

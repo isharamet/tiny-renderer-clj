@@ -3,15 +3,7 @@
             [tiny-renderer-clj.line :as line])
   (:import (java.awt Color)))
 
-(defn draw-triangle [graphics edges]
-  (reduce (fn [g [v0 v1]]
-            (let [[x0 y0 _] v0
-                  [x1 y1 _] v1]
-              (line/draw-line g x0 y0 x1 y1 Color/white)))
-          graphics
-          edges))
-
-(defn draw-filled-triangle
+(defn draw-triangle-1
   ([graphics vertices]
    (let [sorted-vertices (sort-by second vertices)
          [x0 y0 _] (first sorted-vertices)
@@ -33,8 +25,4 @@
   ([graphics edges color]
    (let [graphics (doto graphics (.setColor color))]
      (draw-filled-triangle graphics edges))))
-
-(defn draw-random-colored-filled-triangle [graphics vertices]
-  (draw-filled-triangle graphics vertices (color/random-color)))
-
 
