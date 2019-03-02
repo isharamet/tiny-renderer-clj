@@ -56,3 +56,19 @@
             img
             faces)))
 
+(defn fast-render [graphics file width height]
+  (let [model (load-model file)
+        {:keys [faces vertices]} model
+        hw (/ width 2)
+        hh (/ height 2)
+        img (image/create-image width height)]
+    (reduce (fn [g face]
+              (let [vs (map #(nth vertices (dec %)) face)
+                    svs (map #(scale-point % hw hh) vs)
+                    es (partition 2 1 svs svs)]
+                ;; (line/draw-lines img es Color/green)
+                (triangle/fast-draw-triangle g svs)
+                ))
+            graphics
+            faces)))
+

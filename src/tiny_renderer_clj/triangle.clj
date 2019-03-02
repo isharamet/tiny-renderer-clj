@@ -72,3 +72,13 @@
    (let [color (color/random-color)]
      (draw-triangle img vertices color))))
 
+(defn fast-draw-triangle
+  ([graphics vertices color]
+   (draw-triangle graphics vertices color))
+  ([graphics vertices]
+   (let [color (color/random-color)
+         xs (int-array (map first vertices))
+         ys (int-array (map second vertices))]
+     (doto graphics
+       (.setColor color)
+       (.fillPolygon xs ys 3)))))
