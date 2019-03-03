@@ -6,14 +6,14 @@
 
 (defn draw [file w h]
   (let [
-        ;; image (model/render file w h)
+        image (model/render-1 file w h)
         ]
     (proxy [JPanel] []
       (paintComponent [graphics]
         (proxy-super paintComponent graphics)
         (doto graphics
-          ;; (.drawImage image 0 0 nil)
-          (model/fast-render file w h)
+          (.drawImage image 0 0 nil)
+          ;; (model/fast-render file w h)
           )))))
 
 (defn render [w h]

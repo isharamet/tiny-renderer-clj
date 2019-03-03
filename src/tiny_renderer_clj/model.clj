@@ -2,6 +2,7 @@
   (:require [tiny-renderer-clj.line :as line]
             [tiny-renderer-clj.image :as image]
             [tiny-renderer-clj.triangle :as triangle]
+            [tiny-renderer-clj.vector :as v]
             [clojure.java.io :as io]
             [clojure.string :as str])
   (:import (java.awt Color)))
@@ -36,39 +37,54 @@
               lines))))
 
 (defn scale-point [[x y z] hwidth hheight]
-  (let [x (Math/round (double (* (inc x) hwidth)))
-        y (Math/round (double (* (inc y) hheight)))]
+  (let [x (Math/round (float (* (inc x) hwidth)))
+        y (Math/round (float (* (inc y) hheight)))]
     [x y z]))
 
-(defn render [file width height]
+(def light-dir [0 0 1])
+
+(defn render-1 [file width height]
   (let [model (load-model file)
-        {:keys [faces vertices]} model
-        hw (/ width 2)
-        hh (/ height 2)
-        img (image/create-image width height)]
-    (reduce (fn [img face]
-              (let [vs (map #(nth vertices (dec %)) face)
-                    svs (map #(scale-point % hw hh) vs)
-                    es (partition 2 1 svs svs)]
-                ;; (line/draw-lines img es Color/green)
-                (triangle/draw-triangle img svs)
-                ))
-            img
-            faces)))
+         {:keys [faces vertices]} model
+         hw (/ width 2)
+         hh (/ height 2)
+         img (image/create-image width height)]
+     (reduce (fn [img face]
+               (let [vs (map #(nth vertices (dec %)) face)
+                     svs (map #(scale-point % hw hh) vs)
+                     es (partition 2 1 svs svs)
+                     [v1 v2 v3] vs
+                     n (v/cross (v/subtract v3 v1) (v/subtract v2 v1))
+                     nn (v/normalize n)
+                     intensity (float (v/dot nn light-dir))]
+                 ;; Mesh rendering
+                 ;; (line/draw-lines img es Color/green)
+                 (do
+                   ;; (println vs svs)
+                   (if (> intensity 0)
+                     (let [color (Color. intensity intensity intensity)]
+                       (triangle/draw-triangle img svs color))
+                     img))))
+             img
+             faces)))
 
 (defn fast-render [graphics file width height]
   (let [model (load-model file)
         {:keys [faces vertices]} model
         hw (/ width 2)
-        hh (/ height 2)
-        img (image/create-image width height)]
+        hh (/ height 2)]
     (reduce (fn [g face]
               (let [vs (map #(nth vertices (dec %)) face)
                     svs (map #(scale-point % hw hh) vs)
-                    es (partition 2 1 svs svs)]
-                ;; (line/draw-lines img es Color/green)
-                (triangle/fast-draw-triangle g svs)
-                ))
+                    es (partition 2 1 svs svs)
+                    [v1 v2 v3] vs
+                    n (v/cross (v/subtract v3 v1) (v/subtract v2 v1))
+                    nn (v/normalize n)
+                    intensity (float (v/dot nn light-dir))]
+                (do
+                  (if (> intensity 0)
+                    (let [color (Color. intensity intensity intensity)]
+                      (triangle/fast-draw-triangle g svs color))
+                    g))))
             graphics
             faces)))
-
