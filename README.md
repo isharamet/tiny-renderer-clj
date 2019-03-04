@@ -5,7 +5,7 @@ Simple software renderer implementation in Clojure based on [tinyrenderer](https
 
 ## Progress
 - [x] Lesson 1: Bresenham’s Line Drawing Algorithm.
-- [ ] Lesson 2: Triangle rasterization and back face culling.
+- [x] Lesson 2: Triangle rasterization and back face culling.
 - [ ] Lesson 3: Hidden faces removal (z buffer).
 - [ ] Lesson 4: Perspective projection.
 - [ ] Lesson 5: Moving the camera.
@@ -17,7 +17,7 @@ Simple software renderer implementation in Clojure based on [tinyrenderer](https
 
 
 <p align="center">
-  <img src="https://github.com/isharamet/tiny-renderer-clj/raw/master/img/progress.png" width="712" height="712">
+  <img src="https://github.com/isharamet/tiny-renderer-clj/raw/master/img/progress.png" width="912" height="912">
 </p>
 
 ## Usage
