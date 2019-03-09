@@ -5,30 +5,7 @@
             [tiny-renderer-clj.vector :as vector])
   (:import (java.awt Color)))
 
-(defn draw-triangle-1 [img vertices color]
-  (let [sorted-vertices (sort-by second vertices)
-        [x0 y0 _] (first sorted-vertices)
-        [x1 y1 _] (second sorted-vertices)
-        [x2 y2 _] (last sorted-vertices)
-        height (- y2 y0)]
-    (if (zero? height)
-      img
-      (reduce (fn [img y]
-                (let [second-half (>= y y1)
-                      segment-height (if second-half
-                                       (- y2 y1)
-                                       (- y1 y0))
-                      ydiff (if second-half (- y2 y) (- y y0))
-                      alpha (float (/ ydiff height))
-                      beta (float (/ ydiff segment-height))
-                      [x0 x1 x2] (if second-half [x2 x1 x0] [x0 x1 x2])
-                      ax (+ x0 (Math/round (* alpha (- x2 x0))))
-                      bx (+ x0 (Math/round (* beta (- x1 x0))))]
-                  (line/draw-line img ax y bx y color)))
-              img
-              (range y0 y2)))))
-
-(defn bbox [vertices]
+(defn bbox [vertices width height]
   (let [xsorted (sort-by first vertices)
         ysorted (sort-by second vertices)
         [xmin _ _] (first xsorted)
@@ -50,36 +27,27 @@
             z (float (/ ux uz))]
         [x y z]))))
 
-(defn draw-triangle-2 [img vertices color]
-  (let [[xmin ymin xmax ymax] (bbox vertices)]
+(defn draw-triangle [img vertices color zbuf]
+  (let [width (.getWidth img)
+        height (.getHeight img)
+        [xmin ymin xmax ymax] (bbox vertices width height)]
     (reduce
-     (fn [img y]
+     (fn [[img zbuf] y]
        (reduce
-        (fn [img x]
+        (fn [[img zbuf] x]
           (let [b (barycentric vertices [x y])
                 d (every? #(not (neg? %)) b)]
             (if d
-              (image/draw-pixel img x y color)
-              img)))
-        img
-        (range xmin (inc xmax))))
-     img
-     (range ymin (inc ymax)))))
+              (let [vzs (map last vertices)
+                    z (reduce + (map (fn [[a b]] (* a b)) (map vector b vzs)))
+                    zidx (int (+ x (* y width)))]
+                (if (> z (nth zbuf zidx))
+                  [(image/draw-pixel img x y color)
+                   (assoc zbuf zidx z)]
+                  [img zbuf]))
+              [img zbuf])))
+        [img zbuf]
+        (range xmin xmax)))
+     [img zbuf]
+     (range ymin ymax))))
 
-(defn draw-triangle 
-  ([img vertices color]
-   (draw-triangle-1 img vertices color))
-  ([img vertices]
-   (let [color (color/random-color)]
-     (draw-triangle img vertices color))))
-
-(defn fast-draw-triangle
-  ([graphics vertices color]
-   (let [xs (int-array (map first vertices))
-         ys (int-array (map second vertices))]
-     (doto graphics
-       (.setColor color)
-       (.fillPolygon xs ys 3))))
-  ([graphics vertices]
-   (let [color (color/random-color)]
-     (fast-draw-triangle graphics vertices color))))

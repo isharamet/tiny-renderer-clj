@@ -2,7 +2,6 @@
   (:import (java.awt Color)
            (java.awt.image BufferedImage)))
 
-
 (defn create-image [w h]
   (BufferedImage. w h BufferedImage/TYPE_INT_RGB))
 
