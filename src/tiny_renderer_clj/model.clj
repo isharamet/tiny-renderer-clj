@@ -35,31 +35,45 @@
                   :else m))
               model
               lines))))
+
+(def light-dir [0 0 1])
+
+(defn z-buffer [width height]
+  (vec (replicate (* width height) Integer/MIN_VALUE)))
+
+(defn face-vertices [face vertices]
+  (map #(nth vertices (dec %)) face))
+
 (defn scale-point [[x y z] hwidth hheight]
   (let [x (Math/round (float (* (inc x) hwidth)))
         y (Math/round (float (* (inc y) hheight)))]
     [x y z]))
 
-(def light-dir [0 0 1])
+(defn scale-vertices [vertices hw hh]
+  (map #(scale-point % hw hh) vertices))
+
+(defn normal [[v1 v2 v3]]
+  (v/cross (v/subtract v3 v1) (v/subtract v2 v1)))
+
+(defn nnormal [vertices]
+  (v/normalize (normal vertices)))
 
 (defn render [file width height]
   (let [model (load-model file)
         {:keys [faces vertices]} model
         hw (/ width 2)
         hh (/ height 2)
-        img (image/create-image width height)
-        zbuf (vec (replicate (* width height) Integer/MIN_VALUE))]
-     (reduce (fn [[img zbuf] face]
-               (let [vs (map #(nth vertices (dec %)) face)
-                     svs (map #(scale-point % hw hh) vs)
-                     es (partition 2 1 svs svs)
-                     [v1 v2 v3] vs
-                     n (v/cross (v/subtract v3 v1) (v/subtract v2 v1))
-                     nn (v/normalize n)
-                     intensity (float (v/dot nn light-dir))]
-                 (if (> intensity 0)
-                   (let [color (Color. intensity intensity intensity)]
-                     (triangle/draw-triangle img svs color zbuf))
-                   [img zbuf])))
-             [img zbuf]
-             faces)))
+        [img _] (reduce 
+                 (fn [[img zbuf] face]
+                   (let [fvs (face-vertices face vertices) 
+                         n (nnormal fvs)
+                         i (float (v/dot n light-dir))]
+                     (if (> i 0)
+                       (let [vs (scale-vertices fvs hw hh)
+                             color (Color. i i i)]
+                         (triangle/draw-triangle img vs color zbuf))
+                       [img zbuf])))
+                 [(image/create-image width height) (z-buffer width height)]
+                 faces)]
+    img))
+

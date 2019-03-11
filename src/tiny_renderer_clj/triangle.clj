@@ -27,27 +27,30 @@
             z (float (/ ux uz))]
         [x y z]))))
 
+(defn visible? [bc]
+  (every? #(not (neg? %)) bc))
+
+(defn z-coord [vertices bc]
+  (let [zs (map last vertices)
+        zzs (map vector bc zs)]
+    (reduce + (map (fn [[a b]] (* a b)) zzs))))
+
 (defn draw-triangle [img vertices color zbuf]
-  (let [width (.getWidth img)
-        height (.getHeight img)
-        [xmin ymin xmax ymax] (bbox vertices width height)]
+  (let [w (.getWidth img)
+        h (.getHeight img)
+        [xmin ymin xmax ymax] (bbox vertices w h)]
     (reduce
-     (fn [[img zbuf] y]
-       (reduce
-        (fn [[img zbuf] x]
-          (let [b (barycentric vertices [x y])
-                d (every? #(not (neg? %)) b)]
-            (if d
-              (let [vzs (map last vertices)
-                    z (reduce + (map (fn [[a b]] (* a b)) (map vector b vzs)))
-                    zidx (int (+ x (* y width)))]
-                (if (> z (nth zbuf zidx))
-                  [(image/draw-pixel img x y color)
-                   (assoc zbuf zidx z)]
-                  [img zbuf]))
-              [img zbuf])))
-        [img zbuf]
-        (range xmin xmax)))
+     (fn [[img zbuf] [x y]]
+       (let [bc (barycentric vertices [x y])]
+         (if (visible? bc)
+           (let [z (z-coord vertices bc)
+                 zidx (int (+ x (* y w)))]
+             (if (> z (nth zbuf zidx))
+               [(image/draw-pixel img x y color) (assoc zbuf zidx z)]
+               [img zbuf]))
+           [img zbuf])))
      [img zbuf]
-     (range ymin ymax))))
+     (for [x (range xmin xmax)
+           y (range ymin ymax)]
+       [x y]))))
 
