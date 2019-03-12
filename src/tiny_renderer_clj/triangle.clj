@@ -11,7 +11,7 @@
         [xmin _ _] (first xsorted)
         [xmax _ _] (last xsorted)
         [_ ymin _] (first ysorted)
-        [_ ymax  ] (last ysorted)]
+        [_ ymax _] (last ysorted)]
     [xmin ymin xmax ymax]))
 
 (defn barycentric [vertices p]

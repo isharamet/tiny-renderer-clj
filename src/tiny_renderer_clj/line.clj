@@ -16,12 +16,12 @@
 
 (defn draw-line-2 [img x0 y0 x1 y1 color]
   (let [xdiv (if (= x0 x1) 1 (- x1 x0))]
-   (reduce (fn [g x]
-             (let [t (/ (- x x0) xdiv)
-                   y (+ (* y0 (- 1 t)) (* y1 t))]
-               (image/draw-pixel img x y color)))
-           img
-           (range x0 (inc x1)))))
+    (reduce (fn [g x]
+              (let [t (/ (- x x0) xdiv)
+                    y (+ (* y0 (- 1 t)) (* y1 t))]
+                (image/draw-pixel img x y color)))
+            img
+            (range x0 (inc x1)))))
 
 (defn draw-line-3 [img x0 y0 x1 y1 color]
   (let [steep (< (Math/abs (- x0 x1)) (Math/abs (- y0 y1)))

@@ -63,9 +63,9 @@
         {:keys [faces vertices]} model
         hw (/ width 2)
         hh (/ height 2)
-        [img _] (reduce 
+        [img _] (reduce
                  (fn [[img zbuf] face]
-                   (let [fvs (face-vertices face vertices) 
+                   (let [fvs (face-vertices face vertices)
                          n (nnormal fvs)
                          i (float (v/dot n light-dir))]
                      (if (> i 0)

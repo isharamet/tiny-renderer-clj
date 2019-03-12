@@ -1,5 +1,5 @@
 (ns tiny-renderer-clj.color
-    (:import (java.awt Color)))
+  (:import (java.awt Color)))
 
 (defn random-color []
   (let [r (rand-int 255)

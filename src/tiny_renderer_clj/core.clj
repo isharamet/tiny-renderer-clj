@@ -17,11 +17,11 @@
   (let [panel (doto (render "resources/african_head.obj" w h)
                 (.setOpaque true)
                 (.setBackground Color/black))]
-   (doto (JFrame. "tiny-renderer-clj")
+    (doto (JFrame. "tiny-renderer-clj")
      ;;(.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
-     (.setContentPane panel)
-     (.setSize w (+ h 30))
-     (.setVisible true))))
+      (.setContentPane panel)
+      (.setSize w (+ h 30))
+      (.setVisible true))))
 
 (defn -main []
   (init 500 500))
