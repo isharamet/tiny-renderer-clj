@@ -17,7 +17,7 @@ Simple software renderer implementation in Clojure based on [tinyrenderer](https
 
 
 <p align="center">
-  <img src="https://github.com/isharamet/tiny-renderer-clj/raw/master/img/progress-3.png" width="612" height="642">
+  <img src="https://github.com/isharamet/tiny-renderer-clj/raw/master/img/progress-3-1.png" width="612" height="642">
 </p>
 
 ## Usage

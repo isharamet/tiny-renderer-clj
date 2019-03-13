@@ -16,6 +16,11 @@
      (- (* a3 b1) (* a1 b3))
      (- (* a1 b2) (* a2 b1))]))
 
+(defn add [v1 v2]
+  (let [[a1 a2 a3] v1
+        [b1 b2 b3] v2]
+    [(+ a1 b1) (+ a2 b2) (+ a3 b3)]))
+
 (defn subtract [v1 v2]
   (let [[a1 a2 a3] v1
         [b1 b2 b3] v2]

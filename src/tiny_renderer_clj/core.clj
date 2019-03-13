@@ -1,26 +1,32 @@
 (ns tiny-renderer-clj.core
-  (:require [tiny-renderer-clj.model :as model]
-            [tiny-renderer-clj.triangle :as triangle])
+  (:require [tiny-renderer-clj.model :as model])
   (:import (java.awt Color)
            (javax.swing JFrame JPanel))
   (:gen-class))
 
-(defn render [file w h]
-  (let [img (model/render file w h)]
+(def model-resource "resources/african_head.obj")
+
+(def texture-resource "resources/african_head_diffuse.png")
+
+(defn render [model-file texture-file width height]
+  (let [img (model/render model-file texture-file width height)]
     (proxy [JPanel] []
       (paintComponent [graphics]
         (proxy-super paintComponent graphics)
         (doto graphics
           (.drawImage img 0 0 nil))))))
 
-(defn init [w h]
-  (let [panel (doto (render "resources/african_head.obj" w h)
+(defn init [width height]
+  (let [panel (doto (render model-resource
+                            texture-resource
+                            width
+                            height)
                 (.setOpaque true)
                 (.setBackground Color/black))]
     (doto (JFrame. "tiny-renderer-clj")
-     ;;(.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
+      ;;(.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
       (.setContentPane panel)
-      (.setSize w (+ h 30))
+      (.setSize width (+ height 30))
       (.setVisible true))))
 
 (defn -main []

@@ -1,6 +1,11 @@
 (ns tiny-renderer-clj.image
+  (:require [clojure.java.io :as io])
   (:import (java.awt Color)
-           (java.awt.image BufferedImage)))
+           (java.awt.image BufferedImage)
+           (javax.imageio ImageIO)))
+
+(defn load-image [file]
+  (ImageIO/read (io/file file)))
 
 (defn create-image [w h]
   (BufferedImage. w h BufferedImage/TYPE_INT_RGB))
