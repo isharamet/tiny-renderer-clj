@@ -31,3 +31,4 @@
         norm (Math/sqrt (+ (* a1 a1) (* a2 a2) (* a3 a3)))
         l 1]
     (multiply v (/ l norm))))
+

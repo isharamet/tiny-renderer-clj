@@ -31,23 +31,23 @@
       (.setVisible true))))
 
 (defn -main []
-  (init 500 500))
+  (init 400 400))
 
 (time
- (init 500 500))
+ (init 400 400))
 
-(defn get-rgb [data i]
-  (let [j (* i 4)
-        a (aget ^bytes data j)
-        r (aget ^bytes data (+ j 1))
-        g (aget ^bytes data (+ j 2))
-        b (aget ^bytes data (+ j 3))]
-    (+ (bit-shift-left a 24)
-       (bit-shift-left r 16)
-       (bit-shift-left g 8)
-       b)))
+;; (defn get-rgb [data i]
+;;   (let [j (* i 4)
+;;         a (aget ^bytes data j)
+;;         r (aget ^bytes data (+ j 1))
+;;         g (aget ^bytes data (+ j 2))
+;;         b (aget ^bytes data (+ j 3))]
+;;     (+ (bit-shift-left a 24)
+;;        (bit-shift-left r 16)
+;;        (bit-shift-left g 8)
+;;        b)))
 
-(def texture (model/load-texture texture-resource))
+;; (def texture (model/load-texture texture-resource))
 
-(time (model/load-model model-resource texture))
+;; (time (model/load-model model-resource texture))
 
