@@ -33,22 +33,15 @@
         zzs (map vector bc zs)]
     (reduce + (map (fn [[a b]] (* a b)) zzs))))
 
-(defn draw-triangle [img vertices color-fn zbuf]
-  (let [w (.getWidth img)
-        h (.getHeight img)
-        [xmin ymin xmax ymax] (bbox vertices w h)]
-    (reduce
-     (fn [[img zbuf] [x y]]
-       (let [bc (barycentric vertices [x y])]
-         (if (visible? bc)
-           (let [z (z-coord vertices bc)
-                 zidx (int (+ x (* y w)))]
-             (if (> z (nth zbuf zidx))
-               [(image/draw-pixel img x y (color-fn bc)) (assoc zbuf zidx z)]
-               [img zbuf]))
-           [img zbuf])))
-     [img zbuf]
-     (for [x (range xmin xmax)
-           y (range ymin ymax)]
-       [x y]))))
-
+(defn draw-triangle [img width height vertices color-fn zbuf]
+  (let [[xmin ymin xmax ymax] (bbox vertices width height)]
+    (doseq [y (range ymin ymax)
+            x (range xmin xmax)]
+      (let [bc (barycentric vertices [x y])]
+        (if (visible? bc)
+          (let [z (z-coord vertices bc)
+                idx (int (+ x (* y width)))]
+            (if (> z (aget ^floats zbuf idx))
+              (do
+                (aset-int img idx (color-fn bc))
+                (aset-float zbuf idx z)))))))))

@@ -1,5 +1,6 @@
 (ns tiny-renderer-clj.core
-  (:require [tiny-renderer-clj.model :as model])
+  (:require [tiny-renderer-clj.model :as model]
+            [tiny-renderer-clj.image :as image])
   (:import (java.awt Color)
            (javax.swing JFrame JPanel))
   (:gen-class))
@@ -34,4 +35,19 @@
 
 (time
  (init 500 500))
+
+(defn get-rgb [data i]
+  (let [j (* i 4)
+        a (aget ^bytes data j)
+        r (aget ^bytes data (+ j 1))
+        g (aget ^bytes data (+ j 2))
+        b (aget ^bytes data (+ j 3))]
+    (+ (bit-shift-left a 24)
+       (bit-shift-left r 16)
+       (bit-shift-left g 8)
+       b)))
+
+(def texture (model/load-texture texture-resource))
+
+(time (model/load-model model-resource texture))
 
