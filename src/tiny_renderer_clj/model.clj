@@ -10,8 +10,7 @@
 (defn parse-face [s]
   (->> (str/split s #" ")
        (map #(str/split % #"/"))
-       (map #(into [] (map read-string %)))
-       vec))
+       (map #(into [] (map read-string %)))))
 
 (defn parse-vertice [s]
   (let [[x y z] (map read-string (str/split s #" "))]
@@ -28,13 +27,13 @@
      (cond
        (str/starts-with? l "f ")
        (update m :fs conj (parse-face (subs l 2)))
-       
+
        (str/starts-with? l  "v ")
        (update m :vs conj (parse-vertice (subs l 2)))
-       
+
        (str/starts-with? l  "vt ")
        (update m :vts conj (parse-texture (subs l 4)))
-       
+
        :else m))
    {:fs [] :vs [] :vts []}
    lines))
@@ -44,8 +43,7 @@
 
 (defn map-vertices [idxs vertices]
   (->> idxs
-       (map #(nth vertices (dec %)))
-       vec))
+       (map #(nth vertices (dec %)))))
 
 (defn load-model [file texture]
   (with-open [rdr (io/reader file)]
@@ -72,9 +70,6 @@
 (defn z-buffer [width height]
   (float-array (* width height) -1.0))
 
-(defn face-vertices [face vertices]
-  (map #(nth vertices (dec %)) (map first face)))
-
 (defn scale-point [vc hwidth hheight]
   (let [[x y z] vc
         x (Math/round (float (* (inc x) hwidth)))
@@ -98,14 +93,18 @@
 
 (defn pixel-color [tcs texture intensity bc]
   (->> (map vector tcs bc)
-         (map (fn [[tc d]] (v/multiply tc d)))
-         (reduce v/add)
-         (calculate-color texture intensity)
-         (.getRGB)))
+       (map (fn [[tc d]] (v/multiply tc d)))
+       (reduce v/add)
+       (calculate-color texture intensity)
+       (.getRGB)))
+
+(def load-model-memo (memoize load-model))
+
+(def load-texture-memo (memoize load-texture))
 
 (defn render [model-file texture-file width height]
-  (let [texture (load-texture texture-file)
-        model (load-model model-file texture)
+  (let [texture (load-texture-memo texture-file)
+        model (load-model-memo model-file texture)
         hw (/ width 2)
         hh (/ height 2)
         img (i/create-image width height)
