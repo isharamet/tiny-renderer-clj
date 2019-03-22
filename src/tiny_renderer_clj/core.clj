@@ -34,7 +34,7 @@
   (time
    (init 800 800)))
 
-;; (time (init 400 400))
+(time (init 800 800))
 
 ;; (defn get-rgb [data i]
 ;;   (let [j (* i 4)
@@ -50,5 +50,4 @@
 ;; (def texture (model/load-texture texture-resource))
 
 ;; (time (model/load-model model-resource texture))
-
 

@@ -3,9 +3,29 @@
             [tiny-renderer-clj.triangle :as t]
             [tiny-renderer-clj.vector :as v]
             [tiny-renderer-clj.color :as c]
+            [tiny-renderer-clj.matrix :as m]
             [clojure.java.io :as io]
             [clojure.string :as str])
   (:import (java.awt Color)))
+
+(def depth 255)
+
+(def camera [0 0 3])
+
+(def light-dir [0 0 1])
+
+(defn viewport [x y w h]
+  (let [vp (m/identity 4)
+        hw (/ w 2.0)
+        hh (/ h 2.0)
+        hd (/ depth 2.0)
+        tfs {[0 3] (+ x hw) 
+             [1 3] (+ y hh)
+             [2 3] hd
+             [0 0] hw
+             [1 1] hh
+             [2 2] hd}]
+    (reduce (fn [acc [k v]] (assoc-in acc k v)) vp tfs)))
 
 (defn parse-face [s]
   (->> (str/split s #" ")
@@ -65,19 +85,18 @@
 (defn load-texture [file]
   (i/load-image file))
 
-(def light-dir [0 0 1])
-
 (defn z-buffer [width height]
   (float-array (* width height) -1.0))
 
-(defn scale-point [vc hwidth hheight]
+(defn round-point [vc hwidth hheight]
   (let [[x y z] vc
-        x (Math/round (float (* (inc x) hwidth)))
-        y (Math/round (float (* (inc y) hheight)))]
+        x (Math/round (float x))
+        y (Math/round (float y))
+        z (Math/round (float z))]
     [x y z]))
 
-(defn scale-vertices [vertices hw hh]
-  (map #(scale-point % hw hh) vertices))
+(defn round-vertices [vertices hw hh]
+  (map #(round-point % hw hh) vertices))
 
 (defn normal [[v1 v2 v3]]
   (v/cross (v/subtract v3 v1) (v/subtract v2 v1)))
@@ -111,6 +130,11 @@
         img-data (-> (.getRaster img)
                      (.getDataBuffer)
                      (.getData))
+        vp (viewport (/ width 8.0)
+                     (/ height 8.0)
+                     (* width 0.75)
+                     (* height 0.75))
+        pr (assoc-in (m/identity 4) [3 2] (/ -1.0 (last camera)))
         zbuf (z-buffer width height)]
     (do
       (doseq [face model]
@@ -118,9 +142,11 @@
               n (nnormal vcs)
               i (float (v/dot n light-dir))]
           (if (> i 0)
-            (let [vs (scale-vertices vcs hw hh)
+            (let [vs (map #(m/m-to-v (reduce m/multiply [vp pr (m/v-to-m %)])) vcs)
+                  rvs (scale-vertices vs hw hh)
                   tcs (map second face)
                   color-fn #(pixel-color tcs texture i %)]
-              (t/draw-triangle img-data width height vs color-fn zbuf)))))
+              (t/draw-triangle img-data width height rvs color-fn zbuf)))))
+      
       img)))
 

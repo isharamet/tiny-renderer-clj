@@ -10,7 +10,10 @@
         [xmax] (last xsorted)
         [_ ymin] (first ysorted)
         [_ ymax] (last ysorted)]
-    [xmin ymin xmax ymax]))
+    [(max 0 xmin)
+     (max 0 ymin)
+     (min width xmax)
+     (min height ymax)]))
 
 (defn barycentric [vertices p]
   (let [[[x1 y1] [x2 y2] [x3 y3]] vertices
