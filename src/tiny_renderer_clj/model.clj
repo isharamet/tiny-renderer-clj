@@ -15,7 +15,7 @@
 (def light-dir [0 0 1])
 
 (defn viewport [x y w h]
-  (let [vp (m/identity 4)
+  (let [vp (m/identity-matrix 4)
         hw (/ w 2.0)
         hh (/ h 2.0)
         hd (/ depth 2.0)
@@ -26,6 +26,9 @@
              [1 1] hh
              [2 2] hd}]
     (reduce (fn [acc [k v]] (assoc-in acc k v)) vp tfs)))
+
+(defn projection [cam]
+  (assoc-in (m/identity-matrix 4) [3 2] (/ -1.0 (last cam))))
 
 (defn parse-face [s]
   (->> (str/split s #" ")
@@ -134,7 +137,7 @@
                      (/ height 8.0)
                      (* width 0.75)
                      (* height 0.75))
-        pr (assoc-in (m/identity 4) [3 2] (/ -1.0 (last camera)))
+        pr (projection camera)
         zbuf (z-buffer width height)]
     (do
       (doseq [face model]
@@ -142,8 +145,8 @@
               n (nnormal vcs)
               i (float (v/dot n light-dir))]
           (if (> i 0)
-            (let [vs (map #(m/m-to-v (reduce m/multiply [vp pr (m/v-to-m %)])) vcs)
-                  rvs (scale-vertices vs hw hh)
+            (let [vs (map #(m/m2v (reduce m/multiply [vp pr (m/v2m %)])) vcs)
+                  rvs (round-vertices vs hw hh)
                   tcs (map second face)
                   color-fn #(pixel-color tcs texture i %)]
               (t/draw-triangle img-data width height rvs color-fn zbuf)))))
