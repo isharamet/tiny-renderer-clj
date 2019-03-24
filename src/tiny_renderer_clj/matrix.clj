@@ -35,3 +35,6 @@
    [z]
    [1.0]])
 
+(defn update-matrix [m tfs]
+  (reduce (fn [acc [k v]] (assoc-in acc k v)) m tfs))
+

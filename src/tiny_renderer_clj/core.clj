@@ -33,5 +33,6 @@
 (defn -main []
   (time (init 800 800)))
 
-;; (time (init 800 800))
+;; (time (init 600 600))
+
 

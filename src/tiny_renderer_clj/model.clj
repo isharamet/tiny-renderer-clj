@@ -14,6 +14,10 @@
 
 (def light-dir [0 0 1])
 
+(def eye [2 0 3])
+
+(def center [0 0 0])
+
 (defn viewport [x y w h]
   (let [vp (m/identity-matrix 4)
         hw (/ w 2.0)
@@ -25,7 +29,7 @@
              [0 0] hw
              [1 1] hh
              [2 2] hd}]
-    (reduce (fn [acc [k v]] (assoc-in acc k v)) vp tfs)))
+    (m/update-matrix vp tfs)))
 
 (defn projection [cam]
   (assoc-in (m/identity-matrix 4) [3 2] (/ -1.0 (last cam))))
@@ -91,15 +95,15 @@
 (defn z-buffer [width height]
   (float-array (* width height) -1.0))
 
-(defn round-point [vc hwidth hheight]
+(defn round-point [vc]
   (let [[x y z] vc
         x (Math/round (float x))
         y (Math/round (float y))
         z (Math/round (float z))]
     [x y z]))
 
-(defn round-vertices [vertices hw hh]
-  (map #(round-point % hw hh) vertices))
+(defn round-vertices [vertices]
+  (map #(round-point %) vertices))
 
 (defn normal [[v1 v2 v3]]
   (v/cross (v/subtract v3 v1) (v/subtract v2 v1)))
@@ -124,11 +128,27 @@
 
 (def load-texture-memo (memoize load-texture))
 
+(defn look-at [eye center up]
+  (let [z (v/normalize (v/subtract eye center))
+        x (v/normalize (v/cross up z))
+        y (v/normalize (v/cross z x))
+        mv (m/identity-matrix 4)
+        tr (m/identity-matrix 4)
+        [mv tr] (reduce (fn [[mv tr] [i x y z]]
+                          [(m/update-matrix mv {[0 i] x [1 i] y [2 i] z})
+                           (assoc-in tr [i 3] (- (nth center i))) tr])
+                        [mv tr]
+                        (map vector (range 0 3) x y z))]
+    (m/multiply mv tr)))
+
+(defn adjust-vertices [vs viewport projection model-view]
+  (->> vs
+       (map #(m/m2v (reduce m/multiply [viewport projection model-view (m/v2m %)])))
+       (round-vertices)))
+
 (defn render [model-file texture-file width height]
   (let [texture (load-texture-memo texture-file)
         model (load-model-memo model-file texture)
-        hw (/ width 2)
-        hh (/ height 2)
         img (i/create-image width height)
         img-data (-> (.getRaster img)
                      (.getDataBuffer)
@@ -137,6 +157,8 @@
                      (/ height 8.0)
                      (* width 0.75)
                      (* height 0.75))
+        up [0 1 0]
+        mv (look-at eye center up)
         pr (projection camera)
         zbuf (z-buffer width height)]
     (do
@@ -145,11 +167,9 @@
               n (nnormal vcs)
               i (float (v/dot n light-dir))]
           (if (> i 0)
-            (let [vs (map #(m/m2v (reduce m/multiply [vp pr (m/v2m %)])) vcs)
-                  rvs (round-vertices vs hw hh)
+            (let [vs (adjust-vertices vcs vp pr mv)
                   tcs (map second face)
                   color-fn #(pixel-color tcs texture i %)]
-              (t/draw-triangle img-data width height rvs color-fn zbuf)))))
-      
+              (t/draw-triangle img-data width height vs color-fn zbuf)))))
       img)))
 
