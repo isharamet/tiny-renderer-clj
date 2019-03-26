@@ -21,7 +21,7 @@
         (for [j (range 0 (count (nth b i)))]
           (reduce (fn [acc x]
                     (+ acc
-                       (* (get-in a [i x]) (get-in b [x j])) ))
+                       (* (get-in a [i x]) (get-in b [x j]))))
                   0.0
                   (range 0 n))))))))
 
